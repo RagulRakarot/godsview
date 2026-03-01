@@ -46,7 +46,7 @@ export class IntelligenceFindingsBadge {
 
   constructor() {
     this.enabled = IntelligenceFindingsBadge.getStoredEnabledState();
-    this.popupEnabled = localStorage.getItem(POPUP_STORAGE_KEY) === '1';
+    this.popupEnabled = localStorage.getItem(POPUP_STORAGE_KEY) !== '0';
 
     this.badge = document.createElement('button');
     this.badge.className = 'intel-findings-badge';
@@ -75,11 +75,7 @@ export class IntelligenceFindingsBadge {
       if (target.closest('.popup-toggle-row')) {
         e.stopPropagation();
         this.popupEnabled = !this.popupEnabled;
-        if (this.popupEnabled) {
-          localStorage.setItem(POPUP_STORAGE_KEY, '1');
-        } else {
-          localStorage.removeItem(POPUP_STORAGE_KEY);
-        }
+        localStorage.setItem(POPUP_STORAGE_KEY, this.popupEnabled ? '1' : '0');
         this.renderDropdown();
         return;
       }
@@ -213,11 +209,11 @@ export class IntelligenceFindingsBadge {
   }
 
   private startRefresh(): void {
-    document.addEventListener('wm:intelligence-updated', this.boundUpdate);
+    document.addEventListener('wm:intelligence-updated', () => this.update(true));
     this.refreshInterval = setInterval(this.boundUpdate, REFRESH_INTERVAL_MS);
   }
 
-  public update(): void {
+  public update(isImmediate = false): void {
     this.findings = this.mergeFindings();
     const count = this.findings.length;
 
@@ -242,6 +238,19 @@ export class IntelligenceFindingsBadge {
             this.onAlertClick(finding.original as UnifiedAlert);
           }
         });
+      }
+    } else if (isImmediate && count > this.lastFindingCount) {
+      // Handle the case where the very first finding arrives or immediate update is requested
+      if (this.popupEnabled) {
+        this.playSound();
+        const latest = this.findings[0];
+        if (latest) {
+          if (latest.source === 'signal' && this.onSignalClick) {
+            this.onSignalClick(latest.original as CorrelationSignal);
+          } else if (latest.source === 'alert' && this.onAlertClick) {
+            this.onAlertClick(latest.original as UnifiedAlert);
+          }
+        }
       }
     }
     this.lastFindingCount = count;

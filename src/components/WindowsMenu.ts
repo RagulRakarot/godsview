@@ -235,7 +235,7 @@ export class WindowsMenu {
     ): HTMLElement {
         const row = document.createElement('div');
         row.className = `windows-row${pinned ? ' windows-row-pinned' : ''}`;
-        row.dataset.panelId = panelId;
+        row.setAttribute('data-panel-id', panelId);
 
         const checkboxId = `wm-win-cb-${panelId}`;
 
@@ -261,10 +261,28 @@ export class WindowsMenu {
     `;
 
         // Checkbox → toggle visibility
-        row.querySelector('input[type=checkbox]')?.addEventListener('change', (e) => {
+        const cb = row.querySelector<HTMLInputElement>('input[type=checkbox]');
+        cb?.addEventListener('change', (e) => {
             const checked = (e.target as HTMLInputElement).checked;
             windowsManager.setVisible(panelId, checked);
             this.updateFooter();
+        });
+
+        // Row click → toggle visibility (if hideable and not clicking pin button)
+        row.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            // If clicking pin button or its contents, don't toggle visibility
+            if (target.closest('.windows-pin-btn')) return;
+
+            // If we didn't click the checkbox or label directly (which handles its own toggle),
+            // we manually toggle it.
+            if (hideable && !target.closest('.windows-row-checkbox') && !target.closest('.windows-row-label')) {
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    windowsManager.setVisible(panelId, cb.checked);
+                    this.updateFooter();
+                }
+            }
         });
 
         // Pin button → toggle pin
@@ -272,7 +290,7 @@ export class WindowsMenu {
             e.stopPropagation();
             const newPinned = !windowsManager.getState(panelId).pinned;
             windowsManager.setPinned(panelId, newPinned);
-            this.syncRow(panelId, windowsManager.getState(panelId));
+            // syncRow will be called by the manager's onChange subscriber
         });
 
         return row;
@@ -356,7 +374,7 @@ export class WindowsMenu {
         // Re-sync every row
         const allRows = list.querySelectorAll<HTMLElement>('.windows-row');
         allRows.forEach((row) => {
-            const panelId = row.dataset.panelId;
+            const panelId = row.getAttribute('data-panel-id');
             if (!panelId) return;
             const state = windowsManager.getState(panelId);
             this.syncRow(panelId, state);
