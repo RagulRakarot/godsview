@@ -547,11 +547,6 @@
       "base": "Basis",
       "nuclear": "Nucleair"
     },
-    "community": {
-      "joinDiscussion": "Doe mee aan de discussie",
-      "openDiscussion": "Open discussie",
-      "dontShowAgain": "Niet meer tonen"
-    },
     "threatLabels": {
       "critical": "KRIT",
       "high": "HOOG",
@@ -1949,3 +1944,4 @@
     }
   }
 }
+

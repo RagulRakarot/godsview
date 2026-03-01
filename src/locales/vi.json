@@ -702,11 +702,6 @@
       "base": "Căn cứ",
       "nuclear": "Hạt nhân"
     },
-    "community": {
-      "joinDiscussion": "Tham gia Thảo luận",
-      "openDiscussion": "Mở Thảo luận",
-      "dontShowAgain": "Không hiển thị lại"
-    },
     "threatLabels": {
       "critical": "N.TRỌNG",
       "high": "CAO",
@@ -1949,3 +1944,4 @@
     "all": "Tất cả"
   }
 }
+

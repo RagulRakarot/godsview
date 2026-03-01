@@ -547,11 +547,6 @@
       "base": "Base",
       "nuclear": "Nuclear"
     },
-    "community": {
-      "joinDiscussion": "Junte-se à discussão",
-      "openDiscussion": "Abrir discussão",
-      "dontShowAgain": "Não mostrar novamente"
-    },
     "threatLabels": {
       "critical": "CRÍT",
       "high": "ALTO",
@@ -1949,3 +1944,4 @@
     }
   }
 }
+

@@ -748,11 +748,6 @@
       "base": "군사 기지",
       "nuclear": "핵 시설"
     },
-    "community": {
-      "joinDiscussion": "토론 참여",
-      "openDiscussion": "토론 열기",
-      "dontShowAgain": "다시 표시하지 않기"
-    },
     "threatLabels": {
       "critical": "심각",
       "high": "높음",
@@ -2046,3 +2041,4 @@
     "all": "전체"
   }
 }
+

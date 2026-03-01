@@ -702,11 +702,6 @@
       "base": "ฐานทัพ",
       "nuclear": "นิวเคลียร์"
     },
-    "community": {
-      "joinDiscussion": "เข้าร่วมการสนทนา",
-      "openDiscussion": "เปิดการสนทนา",
-      "dontShowAgain": "ไม่แสดงอีก"
-    },
     "threatLabels": {
       "critical": "วิกฤต",
       "high": "สูง",
@@ -1949,3 +1944,4 @@
     "all": "ทั้งหมด"
   }
 }
+
