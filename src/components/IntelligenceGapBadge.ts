@@ -1,6 +1,5 @@
 import { getRecentSignals, type CorrelationSignal } from '@/services/correlation';
 import { getRecentAlerts, type UnifiedAlert } from '@/services/cross-module-integration';
-import { getAlertSettings, updateAlertSettings } from '@/services/breaking-news-alerts';
 import { t } from '@/services/i18n';
 import { getSignalContext } from '@/utils/analysis-constants';
 import { escapeHtml } from '@/utils/sanitize';
@@ -9,7 +8,7 @@ import { trackFindingClicked } from '@/services/analytics';
 const LOW_COUNT_THRESHOLD = 3;
 const MAX_VISIBLE_FINDINGS = 10;
 const SORT_TIME_TOLERANCE_MS = 60000;
-const REFRESH_INTERVAL_MS = 60000;
+const REFRESH_INTERVAL_MS = 5000;
 const ALERT_HOURS = 6;
 const STORAGE_KEY = 'worldmonitor-intel-findings';
 const POPUP_STORAGE_KEY = 'wm-alert-popup-enabled';
@@ -38,14 +37,7 @@ export class IntelligenceFindingsBadge {
   private onAlertClick: ((alert: UnifiedAlert) => void) | null = null;
   private findings: UnifiedFinding[] = [];
   private boundCloseDropdown = () => this.closeDropdown();
-  private pendingUpdateFrame = 0;
-  private boundUpdate = () => {
-    if (this.pendingUpdateFrame) return;
-    this.pendingUpdateFrame = requestAnimationFrame(() => {
-      this.pendingUpdateFrame = 0;
-      this.update();
-    });
-  };
+  private boundUpdate = () => this.update();
   private audio: HTMLAudioElement | null = null;
   private audioEnabled = true;
   private enabled: boolean;
@@ -79,8 +71,8 @@ export class IntelligenceFindingsBadge {
     this.dropdown.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
 
-      const toggleAttr = target.closest('[data-toggle]')?.getAttribute('data-toggle');
-      if (toggleAttr === 'popup') {
+      // Handle popup toggle click
+      if (target.closest('.popup-toggle-row')) {
         e.stopPropagation();
         this.popupEnabled = !this.popupEnabled;
         if (this.popupEnabled) {
@@ -88,13 +80,6 @@ export class IntelligenceFindingsBadge {
         } else {
           localStorage.removeItem(POPUP_STORAGE_KEY);
         }
-        this.renderDropdown();
-        return;
-      }
-      if (toggleAttr === 'breaking-alerts') {
-        e.stopPropagation();
-        const settings = getAlertSettings();
-        updateAlertSettings({ enabled: !settings.enabled });
         this.renderDropdown();
         return;
       }
@@ -141,7 +126,7 @@ export class IntelligenceFindingsBadge {
   private playSound(): void {
     if (this.audioEnabled && this.audio) {
       this.audio.currentTime = 0;
-      this.audio.play().catch(() => {});
+      this.audio.play().catch(() => { });
     }
   }
 
@@ -245,7 +230,19 @@ export class IntelligenceFindingsBadge {
     if (count > this.lastFindingCount && this.lastFindingCount > 0) {
       this.badge.classList.add('pulse');
       setTimeout(() => this.badge.classList.remove('pulse'), 1000);
-      if (this.popupEnabled) this.playSound();
+
+      // Auto-popup for new findings if enabled
+      if (this.popupEnabled) {
+        this.playSound();
+        const newFindings = this.findings.slice(0, count - this.lastFindingCount);
+        newFindings.forEach(finding => {
+          if (finding.source === 'signal' && this.onSignalClick) {
+            this.onSignalClick(finding.original as CorrelationSignal);
+          } else if (finding.source === 'alert' && this.onAlertClick) {
+            this.onAlertClick(finding.original as UnifiedAlert);
+          }
+        });
+      }
     }
     this.lastFindingCount = count;
 
@@ -322,15 +319,9 @@ export class IntelligenceFindingsBadge {
   private renderPopupToggle(): string {
     const label = t('components.intelligenceFindings.popupAlerts');
     const checked = this.popupEnabled;
-    const breakingSettings = getAlertSettings();
-    const breakingLabel = t('components.intelligenceFindings.breakingAlerts');
-    return `<div class="popup-toggle-row" data-toggle="popup">
+    return `<div class="popup-toggle-row">
         <span class="popup-toggle-label">🔔 ${escapeHtml(label)}</span>
         <span class="popup-toggle-switch${checked ? ' on' : ''}"><span class="popup-toggle-knob"></span></span>
-      </div>
-      <div class="popup-toggle-row" data-toggle="breaking-alerts">
-        <span class="popup-toggle-label">🚨 ${escapeHtml(breakingLabel)}</span>
-        <span class="popup-toggle-switch${breakingSettings.enabled ? ' on' : ''}"><span class="popup-toggle-knob"></span></span>
       </div>`;
   }
 
@@ -539,9 +530,6 @@ export class IntelligenceFindingsBadge {
   public destroy(): void {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
-    }
-    if (this.pendingUpdateFrame) {
-      cancelAnimationFrame(this.pendingUpdateFrame);
     }
     document.removeEventListener('wm:intelligence-updated', this.boundUpdate);
     document.removeEventListener('click', this.boundCloseDropdown);

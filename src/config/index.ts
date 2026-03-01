@@ -41,6 +41,7 @@ export {
   DEFAULT_MAP_LAYERS,
   MOBILE_DEFAULT_MAP_LAYERS,
   LAYER_TO_SOURCE,
+  PANEL_CATEGORY_MAP,
 } from './panels';
 
 // ============================================

@@ -13,7 +13,8 @@ interface CachedResult {
   clusters: MilitaryBaseCluster[];
   totalInView: number;
   truncated: boolean;
-  cacheKey: string;
+  bbox: string;
+  zoom: number;
 }
 
 const quantize = (v: number, step: number) => Math.round(v / step) * step;
@@ -61,9 +62,8 @@ export async function fetchMilitaryBases(
 ): Promise<CachedResult | null> {
   const qBbox = quantizeBbox(swLat, swLon, neLat, neLon, zoom);
   const floorZoom = Math.floor(zoom);
-  const cacheKey = `${qBbox}:${floorZoom}:${filters?.type || ''}:${filters?.kind || ''}:${filters?.country || ''}`;
 
-  if (lastResult && lastResult.cacheKey === cacheKey) {
+  if (lastResult && lastResult.bbox === qBbox && lastResult.zoom === floorZoom) {
     return lastResult;
   }
 
@@ -85,7 +85,8 @@ export async function fetchMilitaryBases(
         clusters: resp.clusters,
         totalInView: resp.totalInView,
         truncated: resp.truncated,
-        cacheKey,
+        bbox: qBbox,
+        zoom: floorZoom,
       };
       lastResult = result;
       return result;

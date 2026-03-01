@@ -1,4 +1,4 @@
-const DB_NAME = 'worldmonitor_db';
+const DB_NAME = 'godsview_db';
 const DB_VERSION = 1;
 
 interface BaselineEntry {

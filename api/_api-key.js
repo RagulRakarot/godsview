@@ -7,7 +7,7 @@ const DESKTOP_ORIGIN_PATTERNS = [
 
 const BROWSER_ORIGIN_PATTERNS = [
   /^https:\/\/(.*\.)?worldmonitor\.app$/,
-  /^https:\/\/worldmonitor-[a-z0-9-]+\.vercel\.app$/,
+  /^https:\/\/worldmonitor-[a-z0-9-]+-elie-[a-z0-9]+\.vercel\.app$/,
   ...(process.env.NODE_ENV === 'production' ? [] : [
     /^https?:\/\/localhost(:\d+)?$/,
     /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
@@ -22,20 +22,9 @@ function isTrustedBrowserOrigin(origin) {
   return Boolean(origin) && BROWSER_ORIGIN_PATTERNS.some(p => p.test(origin));
 }
 
-function extractOriginFromReferer(referer) {
-  if (!referer) return '';
-  try {
-    return new URL(referer).origin;
-  } catch {
-    return '';
-  }
-}
-
 export function validateApiKey(req) {
   const key = req.headers.get('X-WorldMonitor-Key');
-  // Same-origin browser requests don't send Origin (per CORS spec).
-  // Fall back to Referer to identify trusted same-origin callers.
-  const origin = req.headers.get('Origin') || extractOriginFromReferer(req.headers.get('Referer')) || '';
+  const origin = req.headers.get('Origin') || '';
 
   // Desktop app — always require API key
   if (isDesktopOrigin(origin)) {

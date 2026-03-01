@@ -52,7 +52,6 @@ export const DEFAULT_PANELS: Record<string, PanelConfig> = {
 
 // Map layers for geopolitical view
 export const DEFAULT_MAP_LAYERS: MapLayers = {
-  gpsJamming: false,
   conflicts: true,
   bases: true,
   cables: false,
@@ -97,13 +96,10 @@ export const DEFAULT_MAP_LAYERS: MapLayers = {
   speciesRecovery: false,
   renewableInstallations: false,
   tradeRoutes: false,
-  iranAttacks: false,
-  dayNight: false,
 };
 
 // Mobile-specific defaults for geopolitical
 export const MOBILE_DEFAULT_MAP_LAYERS: MapLayers = {
-  gpsJamming: false,
   conflicts: true,
   bases: false,
   cables: false,
@@ -148,8 +144,6 @@ export const MOBILE_DEFAULT_MAP_LAYERS: MapLayers = {
   speciesRecovery: false,
   renewableInstallations: false,
   tradeRoutes: false,
-  iranAttacks: false,
-  dayNight: false,
 };
 
 export const VARIANT_CONFIG: VariantConfig = {

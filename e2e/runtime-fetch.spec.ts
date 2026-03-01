@@ -89,8 +89,8 @@ test.describe('desktop runtime routing guardrails', () => {
           typeof input === 'string'
             ? input
             : input instanceof URL
-            ? input.toString()
-            : input.url;
+              ? input.toString()
+              : input.url;
 
         calls.push(url);
 
@@ -177,8 +177,8 @@ test.describe('desktop runtime routing guardrails', () => {
           typeof input === 'string'
             ? input
             : input instanceof URL
-            ? input.toString()
-            : input.url;
+              ? input.toString()
+              : input.url;
         calls.push(url);
 
         if (url.includes('127.0.0.1:46123/api/local-env-update')) {
@@ -329,7 +329,7 @@ test.describe('desktop runtime routing guardrails', () => {
         __TAURI__?: { core?: { invoke?: (command: string) => Promise<unknown> } };
       };
       const previousTauri = globalWindow.__TAURI__;
-      const releaseUrl = 'https://github.com/koala73/worldmonitor/releases/latest';
+      const releaseUrl = 'https://github.com/RagulRakarot/Godsview/releases/latest';
 
       const updaterProto = DesktopUpdater.prototype as unknown as {
         resolveUpdateDownloadUrl: (releaseUrl: string) => Promise<string>;
@@ -378,7 +378,7 @@ test.describe('desktop runtime routing guardrails', () => {
 
     expect(result.macArm).toBe('https://worldmonitor.app/api/download?platform=macos-arm64&variant=full');
     expect(result.windowsX64).toBe('https://worldmonitor.app/api/download?platform=windows-exe&variant=full');
-    expect(result.linuxFallback).toBe('https://github.com/koala73/worldmonitor/releases/latest');
+    expect(result.linuxFallback).toBe('https://github.com/RagulRakarot/Godsview/releases/latest');
   });
 
   test('MapContainer falls back to SVG when WebGL2 is unavailable', async ({ page }) => {
@@ -608,11 +608,11 @@ test.describe('desktop runtime routing guardrails', () => {
             commodities: {
               renderCommodities: (data: Array<unknown>) => commoditiesRenders.push(data.length),
               showConfigError: (message: string) => commoditiesConfigErrors.push(message),
-              showRetrying: () => {},
+              showRetrying: () => { },
             },
             crypto: {
               renderCrypto: (data: Array<unknown>) => cryptoRenders.push(data.length),
-              showRetrying: () => {},
+              showRetrying: () => { },
             },
           },
           statusPanel: {
@@ -745,8 +745,8 @@ test.describe('desktop runtime routing guardrails', () => {
           typeof input === 'string'
             ? input
             : input instanceof URL
-            ? input.toString()
-            : input.url;
+              ? input.toString()
+              : input.url;
 
         calls.push(url);
 
@@ -818,8 +818,8 @@ test.describe('desktop runtime routing guardrails', () => {
           typeof input === 'string'
             ? input
             : input instanceof URL
-            ? input.toString()
-            : input.url;
+              ? input.toString()
+              : input.url;
 
         calls.push(url);
 

@@ -133,7 +133,7 @@ function extractHostnames(...urls: (string | undefined)[]): string[] {
   const hosts: string[] = [];
   for (const u of urls) {
     if (!u) continue;
-    try { hosts.push(new URL(u).hostname); } catch {}
+    try { hosts.push(new URL(u).hostname); } catch { }
   }
   return hosts;
 }
@@ -321,7 +321,7 @@ export function installRuntimeFetchPatch(): void {
         const { getRuntimeConfigSnapshot } = await import('@/services/runtime-config');
         const wmKeyValue = getRuntimeConfigSnapshot().secrets['WORLDMONITOR_API_KEY']?.value;
         if (wmKeyValue) {
-          cloudHeaders.set('X-WorldMonitor-Key', wmKeyValue);
+          cloudHeaders.set('X-Godsview-Key', wmKeyValue);
         }
       }
       return nativeFetch(cloudUrl, { ...init, headers: cloudHeaders });

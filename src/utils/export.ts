@@ -12,12 +12,12 @@ interface ExportData {
   timestamp: number;
 }
 
-export function exportToJSON(data: ExportData, filename = 'worldmonitor-export'): void {
+export function exportToJSON(data: ExportData, filename = 'godsview-export'): void {
   const jsonStr = JSON.stringify(data, null, 2);
   downloadFile(jsonStr, `${filename}.json`, 'application/json');
 }
 
-export function exportToCSV(data: ExportData, filename = 'worldmonitor-export'): void {
+export function exportToCSV(data: ExportData, filename = 'godsview-export'): void {
   const lines: string[] = [];
 
   if (data.news && data.news.length > 0) {
@@ -75,7 +75,7 @@ export interface CountryBriefExport {
   level?: string;
   trend?: string;
   components?: { unrest: number; conflict: number; security: number; information: number };
-  signals?: Record<string, number | string | null>;
+  signals?: Record<string, number>;
   brief?: string;
   headlines?: Array<{ title: string; source: string; link: string; pubDate?: string }>;
   generatedAt: string;
@@ -190,7 +190,7 @@ export class ExportPanel {
   private export(format: ExportFormat): void {
     const data = this.getData();
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `worldmonitor-${timestamp}`;
+    const filename = `godsview-${timestamp}`;
 
     if (format === 'json') {
       exportToJSON(data, filename);

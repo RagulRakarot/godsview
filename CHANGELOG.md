@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to World Monitor are documented here.
+All notable changes to Godsview are documented here.
 
 ## [2.5.20] - 2026-02-27
 

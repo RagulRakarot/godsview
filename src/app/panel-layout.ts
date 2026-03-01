@@ -34,8 +34,6 @@ import {
   TradePolicyPanel,
   SupplyChainPanel,
   SecurityAdvisoriesPanel,
-  OrefSirensPanel,
-  TelegramIntelPanel,
 } from '@/components';
 import { SatelliteFiresPanel } from '@/components/SatelliteFiresPanel';
 import { PositiveNewsFeedPanel } from '@/components/PositiveNewsFeedPanel';
@@ -61,6 +59,8 @@ import { BETA_MODE } from '@/config/beta';
 import { t } from '@/services/i18n';
 import { getCurrentTheme } from '@/utils';
 import { trackCriticalBannerAction } from '@/services/analytics';
+import { WindowsMenu } from '@/components/WindowsMenu';
+import { windowsManager } from '@/services/windows-manager';
 
 export interface PanelLayoutCallbacks {
   openCountryStory: (code: string, name: string) => void;
@@ -75,6 +75,8 @@ export class PanelLayoutManager implements AppModule {
   private panelDragCleanupHandlers: Array<() => void> = [];
   private criticalBannerEl: HTMLElement | null = null;
   private readonly applyTimeRangeFilterDebounced: () => void;
+  private windowsMenu: WindowsMenu | null = null;
+  private unsubWindowsManager: (() => void) | null = null;
 
   constructor(ctx: AppContext, callbacks: PanelLayoutCallbacks) {
     this.ctx = ctx;
@@ -95,6 +97,10 @@ export class PanelLayoutManager implements AppModule {
       this.criticalBannerEl.remove();
       this.criticalBannerEl = null;
     }
+    this.windowsMenu?.destroy();
+    this.windowsMenu = null;
+    this.unsubWindowsManager?.();
+    this.unsubWindowsManager = null;
     // Clean up happy variant panels
     this.ctx.tvMode?.destroy();
     this.ctx.tvMode = null;
@@ -112,10 +118,10 @@ export class PanelLayoutManager implements AppModule {
       <div class="header">
         <div class="header-left">
           <div class="variant-switcher">${(() => {
-            const local = this.ctx.isDesktopApp || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-            const vHref = (v: string, prod: string) => local || SITE_VARIANT === v ? '#' : prod;
-            const vTarget = (v: string) => !local && SITE_VARIANT !== v ? 'target="_blank" rel="noopener"' : '';
-            return `
+        const local = this.ctx.isDesktopApp || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        const vHref = (v: string, prod: string) => local || SITE_VARIANT === v ? '#' : prod;
+        const vTarget = (v: string) => !local && SITE_VARIANT !== v ? 'target="_blank" rel="noopener"' : '';
+        return `
             <a href="${vHref('full', 'https://worldmonitor.app')}"
                class="variant-option ${SITE_VARIANT === 'full' ? 'active' : ''}"
                data-variant="full"
@@ -151,19 +157,19 @@ export class PanelLayoutManager implements AppModule {
               <span class="variant-icon">☀️</span>
               <span class="variant-label">Good News</span>
             </a>` : ''}`;
-          })()}</div>
-          <span class="logo">MONITOR</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
-          <a href="https://x.com/eliehabib" target="_blank" rel="noopener" class="credit-link">
-            <svg class="x-logo" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            <span class="credit-text">@eliehabib</span>
-          </a>
-          <a href="https://github.com/koala73/worldmonitor" target="_blank" rel="noopener" class="github-link" title="${t('header.viewOnGitHub')}">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      })()}</div>
+          <span class="logo">GODSVIEW</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
+          <a href="https://www.instagram.com/ragul_rakarot/?hl=en" target="_blank" rel="noopener" class="credit-link">
+            <span class="credit-text">@ragul_rakarot</span>
           </a>
           <div class="status-indicator">
             <span class="status-dot"></span>
             <span>${t('header.live')}</span>
           </div>
+          <button class="windows-btn" id="windowsMenuBtn" title="Show/hide dashboard modules">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Windows</span>
+          </button>
           <div class="region-selector">
             <select id="regionSelect" class="region-select">
               <option value="global">${t('components.deckgl.views.global')}</option>
@@ -178,9 +184,7 @@ export class PanelLayoutManager implements AppModule {
           </div>
         </div>
         <div class="header-right">
-          <!-- TODO: Add "Download App" link here for non-desktop users (this.ctx.isDesktopApp === false) -->
           <button class="search-btn" id="searchBtn"><kbd>⌘K</kbd> ${t('header.search')}</button>
-          ${this.ctx.isDesktopApp ? '' : `<button class="copy-link-btn" id="copyLinkBtn">${t('header.copyLink')}</button>`}
           <button class="theme-toggle-btn" id="headerThemeToggle" title="${t('header.toggleTheme')}">
             ${getCurrentTheme() === 'dark'
         ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
@@ -213,6 +217,60 @@ export class PanelLayoutManager implements AppModule {
     `;
 
     this.createPanels();
+
+    // Mount Windows menu
+    const windowsBtn = document.getElementById('windowsMenuBtn');
+    if (windowsBtn) {
+      this.windowsMenu = new WindowsMenu(windowsBtn as HTMLElement);
+    }
+
+    // Subscribe to windowsManager for visibility & pin reactions
+    this.unsubWindowsManager = windowsManager.onChange((panelId, state) => {
+      if (panelId === 'map') {
+        const mapSection = document.getElementById('mapSection');
+        if (mapSection) {
+          if (!state.visible) {
+            if (!mapSection.classList.contains('hidden')) {
+              mapSection.classList.add('panel-is-hiding');
+              const onEnd = () => {
+                mapSection.classList.add('hidden');
+                mapSection.classList.remove('panel-is-hiding');
+                mapSection.removeEventListener('animationend', onEnd);
+              };
+              mapSection.addEventListener('animationend', onEnd);
+            }
+          } else {
+            if (mapSection.classList.contains('hidden')) {
+              mapSection.classList.remove('hidden');
+              mapSection.classList.add('panel-is-showing');
+              const onEnd = () => {
+                mapSection.classList.remove('panel-is-showing');
+                mapSection.removeEventListener('animationend', onEnd);
+              };
+              mapSection.addEventListener('animationend', onEnd);
+            }
+          }
+        }
+        return;
+      }
+
+      const panel = this.ctx.panels[panelId];
+      if (panel) {
+        const panelBase = panel as import('@/components/Panel').Panel;
+        if (!state.visible) {
+          if (!panelBase.getElement().classList.contains('hidden')) {
+            panelBase.animateHide();
+          }
+        } else {
+          if (panelBase.getElement().classList.contains('hidden')) {
+            panelBase.animateShow();
+          }
+        }
+      }
+
+      // Handle pinning: move pinned panels to front of grid
+      this.applyPinOrder();
+    });
   }
 
   renderCriticalBanner(postures: TheaterPostureSummary[]): void {
@@ -285,16 +343,25 @@ export class PanelLayoutManager implements AppModule {
   }
 
   applyPanelSettings(): void {
-    Object.entries(this.ctx.panelSettings).forEach(([key, config]) => {
+    const states = windowsManager.getAllState();
+    Object.entries(states).forEach(([key, state]) => {
       if (key === 'map') {
         const mapSection = document.getElementById('mapSection');
         if (mapSection) {
-          mapSection.classList.toggle('hidden', !config.enabled);
+          mapSection.classList.toggle('hidden', !state.visible);
         }
         return;
       }
       const panel = this.ctx.panels[key];
-      panel?.toggle(config.enabled);
+      // Some panels like 'tvMode' or others might not exist in ctx.panels, ignore those
+      const panelBase = panel as import('@/components/Panel').Panel | undefined;
+      if (panelBase) {
+        if (!state.visible) {
+          panelBase.getElement().classList.add('hidden');
+        } else {
+          panelBase.getElement().classList.remove('hidden');
+        }
+      }
     });
   }
 
@@ -550,12 +617,6 @@ export class PanelLayoutManager implements AppModule {
         void this.callbacks.loadSecurityAdvisories?.();
       });
       this.ctx.panels['security-advisories'] = securityAdvisoriesPanel;
-
-      const orefSirensPanel = new OrefSirensPanel();
-      this.ctx.panels['oref-sirens'] = orefSirensPanel;
-
-      const telegramIntelPanel = new TelegramIntelPanel();
-      this.ctx.panels['telegram-intel'] = telegramIntelPanel;
     }
 
     if (SITE_VARIANT === 'finance') {
@@ -679,6 +740,23 @@ export class PanelLayoutManager implements AppModule {
       }
     });
 
+    // ── Register all panels with windowsManager to unify labels and state ─
+    const mapLabel = SITE_VARIANT === 'tech' ? t('panels.techMap') : SITE_VARIANT === 'happy' ? 'Good News Map' : t('panels.map');
+    windowsManager.registerPanel({
+      id: 'map',
+      label: mapLabel,
+      hideable: true
+    }, this.ctx.panelSettings['map']?.enabled ?? true);
+
+    for (const [key, panel] of Object.entries(this.ctx.panels)) {
+      const panelBase = panel as import('@/components/Panel').Panel;
+      windowsManager.registerPanel({
+        id: key,
+        label: panelBase.title || DEFAULT_PANELS[key]?.name || key,
+        hideable: true
+      }, this.ctx.panelSettings[key]?.enabled ?? true);
+    }
+
     this.ctx.map.onTimeRangeChanged((range) => {
       this.ctx.currentTimeRange = range;
       this.applyTimeRangeFilterDebounced();
@@ -777,6 +855,26 @@ export class PanelLayoutManager implements AppModule {
     localStorage.setItem(this.ctx.PANEL_ORDER_KEY, JSON.stringify(order));
   }
 
+  /** Move all pinned panels to the front of the panels grid, non-pinned stay in order. */
+  applyPinOrder(): void {
+    const grid = document.getElementById('panelsGrid');
+    if (!grid) return;
+
+    const children = Array.from(grid.children) as HTMLElement[];
+    const pinnedIds = windowsManager.getPinnedIds();
+
+    // Separate pinned from rest, maintaining relative order within each group
+    const pinned = children.filter((el) => pinnedIds.includes(el.dataset.panel ?? ''));
+    const unpinned = children.filter((el) => !pinnedIds.includes(el.dataset.panel ?? ''));
+
+    // Re-append in order: pinned first, then unpinned
+    for (const el of [...pinned, ...unpinned]) {
+      grid.appendChild(el);
+    }
+
+    this.savePanelOrder();
+  }
+
   private attachRelatedAssetHandlers(panel: NewsPanel): void {
     panel.setRelatedAssetHandlers({
       onRelatedAssetClick: (asset) => this.handleRelatedAssetClick(asset),
@@ -835,12 +933,7 @@ export class PanelLayoutManager implements AppModule {
       if (e.button !== 0) return;
       const target = e.target as HTMLElement;
       if (el.dataset.resizing === 'true') return;
-      if (
-        target.classList?.contains('panel-resize-handle') ||
-        target.closest?.('.panel-resize-handle') ||
-        target.classList?.contains('panel-col-resize-handle') ||
-        target.closest?.('.panel-col-resize-handle')
-      ) return;
+      if (target.classList?.contains('panel-resize-handle') || target.closest?.('.panel-resize-handle')) return;
       if (target.closest('button, a, input, select, textarea, .panel-content')) return;
 
       isDragging = true;

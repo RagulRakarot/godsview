@@ -1,4 +1,5 @@
-# GODS VIEW
+# Godsview
+
 **Real-time global intelligence dashboard** — AI-powered news aggregation, geopolitical monitoring, and infrastructure tracking in a unified situational awareness interface.
 
 [![GitHub stars](https://img.shields.io/github/stars/RagulRakarot/Godsview?style=social)](https://github.com/RagulRakarot/Godsview/stargazers)
@@ -26,11 +27,11 @@
   <a href="https://github.com/RagulRakarot/Godsview/releases/latest"><strong>All Releases</strong></a>
 </p>
 
-![Gods View Dashboard](new-world-monitor.png)
+![Godsview Dashboard](new-world-monitor.png)
 
 ---
 
-## Why Gods View?
+## Why Godsview?
 
 | Problem                            | Solution                                                                                                   |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -52,10 +53,10 @@
 
 | Variant             | URL                                                          | Focus                                            |
 | ------------------- | ------------------------------------------------------------ | ------------------------------------------------ |
-| **Gods View**   | [worldmonitor.app](https://worldmonitor.app)                 | Geopolitics, military, conflicts, infrastructure |
-| **Tech Monitor**    | [tech.worldmonitor.app](https://tech.worldmonitor.app)       | Startups, AI/ML, cloud, cybersecurity            |
-| **Finance Monitor** | [finance.worldmonitor.app](https://finance.worldmonitor.app) | Global markets, trading, central banks, Gulf FDI |
-| **Happy Monitor**   | [happy.worldmonitor.app](https://happy.worldmonitor.app)     | Good news, positive trends, uplifting stories    |
+| **Godsview**   | [godsview.app](https://godsview.app)                 | Geopolitics, military, conflicts, infrastructure |
+| **Tech Monitor**    | [tech.godsview.app](https://tech.godsview.app)       | Startups, AI/ML, cloud, cybersecurity            |
+| **Finance Monitor** | [finance.godsview.app](https://finance.godsview.app) | Global markets, trading, central banks, Gulf FDI |
+| **Happy Monitor**   | [happy.godsview.app](https://happy.godsview.app)     | Good news, positive trends, uplifting stories    |
 
 All four variants run from a single codebase — switch between them with one click via the header bar.
 
@@ -204,7 +205,7 @@ All four variants run from a single codebase — switch between them with one cl
 - **Native desktop app** for macOS, Windows, and Linux — packages the full dashboard with a local Node.js sidecar that runs all 60+ API handlers locally
 - **OS keychain integration** — API keys stored in the system credential manager (macOS Keychain, Windows Credential Manager), never in plaintext files
 - **Token-authenticated sidecar** — a unique session token prevents other local processes from accessing the sidecar on localhost. Generated per launch using randomized hashing
-- **Cloud fallback** — when a local API handler fails or is missing, requests transparently fall through to the cloud deployment (worldmonitor.app) with origin headers stripped
+- **Cloud fallback** — when a local API handler fails or is missing, requests transparently fall through to the cloud deployment (godsview.app) with origin headers stripped
 - **Settings window** — dedicated configuration UI (Cmd+,) with three tabs: **LLMs** (Ollama endpoint, model selection, Groq, OpenRouter), **API Keys** (12+ data source credentials with per-key validation), and **Debug & Logs** (traffic log, verbose mode, log files). Each tab runs an independent verification pipeline — saving in the LLMs tab doesn't block API Keys validation
 - **Automatic model discovery** — when you set an Ollama or LM Studio endpoint URL in the LLMs tab, the settings panel immediately queries it for available models (tries Ollama native `/api/tags` first, then OpenAI-compatible `/v1/models`) and populates a dropdown. Embedding models are filtered out. If discovery fails, a manual text input appears as fallback
 - **Cross-window secret sync** — the main dashboard and settings window run in separate webviews with independent JS contexts. Saving a secret in Settings writes to the OS keychain and broadcasts a `localStorage` change event. The main window listens for this event and hot-reloads all secrets without requiring an app restart
@@ -705,7 +706,7 @@ Resource management is aggressive — iframes are lazy-loaded via Intersection O
 
 ### Desktop Auto-Update
 
-The desktop app checks for new versions by polling `worldmonitor.app/api/version` — once at startup (after a 5-second delay) and then every 6 hours. When a newer version is detected (semver comparison), a non-intrusive update badge appears with a direct link to the GitHub Release page.
+The desktop app checks for new versions by polling `godsview.app/api/version` — once at startup (after a 5-second delay) and then every 6 hours. When a newer version is detected (semver comparison), a non-intrusive update badge appears with a direct link to the GitHub Release page.
 
 Update prompts are dismissable per-version — dismissing v2.5.0 won't suppress v2.6.0 notifications. The updater is variant-aware: a Tech Monitor desktop build links to the Tech Monitor release asset, not the full variant.
 
@@ -725,10 +726,10 @@ A `theme-changed` CustomEvent is dispatched on toggle, allowing panels with cust
 
 ### Privacy & Offline Architecture
 
-Gods View is designed so that sensitive intelligence work can run entirely on local hardware with no data leaving the user's machine. The privacy architecture operates at three levels:
+Godsview is designed so that sensitive intelligence work can run entirely on local hardware with no data leaving the user's machine. The privacy architecture operates at three levels:
 
 **Level 1 — Full Cloud (Web App)**
-All processing happens server-side on Vercel Edge Functions. API keys are stored in Vercel environment variables. News feeds are proxied through domain-allowlisted endpoints. AI summaries use Groq or OpenRouter. This is the default for `worldmonitor.app` — convenient but cloud-dependent.
+All processing happens server-side on Vercel Edge Functions. API keys are stored in Vercel environment variables. News feeds are proxied through domain-allowlisted endpoints. AI summaries use Groq or OpenRouter. This is the default for `godsview.app` — convenient but cloud-dependent.
 
 **Level 2 — Desktop with Cloud APIs (Tauri + Sidecar)**
 The desktop app runs a local Node.js sidecar that mirrors all 60+ cloud API handlers. API keys are stored in the OS keychain (macOS Keychain / Windows Credential Manager), never in plaintext files. Requests are processed locally first; cloud is a transparent fallback for missing handlers. Credential management happens through a native settings window with per-key validation.
@@ -749,7 +750,7 @@ The desktop readiness framework (`desktop-readiness.ts`) catalogs each feature's
 
 ### Product Analytics
 
-Gods View includes privacy-first product analytics via PostHog to understand usage patterns and improve the dashboard. The implementation enforces strict data safety at multiple levels:
+Godsview includes privacy-first product analytics via PostHog to understand usage patterns and improve the dashboard. The implementation enforces strict data safety at multiple levels:
 
 **Typed event allowlists** — every analytics event has a schema defining exactly which properties are permitted. Unlisted properties are silently dropped before transmission. This prevents accidental inclusion of sensitive data in analytics payloads, even if a developer passes extra fields.
 
@@ -930,7 +931,7 @@ The Supply Chain panel provides real-time visibility into global logistics risk 
 
 **Critical Minerals tab** — applies the **Herfindahl-Hirschman Index (HHI)** to 2024 global production data for minerals critical to technology and defense manufacturing — lithium, cobalt, rare earths, gallium, germanium, and others. The HHI quantifies supply concentration risk: a market dominated by a single producer scores near 10,000, while a perfectly distributed market scores near 0. Each mineral displays the top 3 producing countries with market share percentages, flagging single-country dependencies that represent strategic vulnerability (e.g., China's dominance in rare earth processing). This tab uses static production data, cached for 24 hours with no external API dependency.
 
-The panel is available on the FULL (Gods View) variant and integrates with the infrastructure cascade model — when a chokepoint disruption coincides with high mineral concentration risk for affected trade routes, the combined signal feeds into convergence detection.
+The panel is available on the FULL (Godsview) variant and integrates with the infrastructure cascade model — when a chokepoint disruption coincides with high mineral concentration risk for affected trade routes, the combined signal feeds into convergence detection.
 
 ### BTC ETF Flow Estimation
 
@@ -948,14 +949,14 @@ This is an approximation, not a substitute for official flow data, but it captur
 
 A single codebase produces four specialized dashboards, each with distinct feeds, panels, map layers, and branding:
 
-| Aspect                | Gods View                                        | Tech Monitor                                    | Finance Monitor                                  | Happy Monitor                                         |
+| Aspect                | Godsview                                        | Tech Monitor                                    | Finance Monitor                                  | Happy Monitor                                         |
 | --------------------- | ---------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------- |
-| **Domain**            | worldmonitor.app                                     | tech.worldmonitor.app                           | finance.worldmonitor.app                         | happy.worldmonitor.app                                |
+| **Domain**            | godsview.app                                     | tech.godsview.app                           | finance.godsview.app                         | happy.godsview.app                                |
 | **Focus**             | Geopolitics, military, conflicts                     | AI/ML, startups, cybersecurity                  | Markets, trading, central banks                  | Good news, conservation, human progress               |
 | **RSS Feeds**         | ~25 categories (politics, MENA, Africa, think tanks) | ~20 categories (AI, VC blogs, startups, GitHub) | ~18 categories (forex, bonds, commodities, IPOs) | 10+ positive-news sources (GNN, Positive.News, Upworthy) |
 | **Panels**            | 45 (strategic posture, CII, cascade, trade policy)   | 31 (AI labs, unicorns, accelerators)            | 31 (forex, bonds, derivatives, trade policy)     | 8 (good news, breakthroughs, conservation, renewables) |
 | **Unique Map Layers** | Military bases, nuclear facilities, hotspots         | Tech HQs, cloud regions, startup hubs           | Stock exchanges, central banks, Gulf investments | Positive events, kindness, species recovery, renewables |
-| **Desktop App**       | Gods View.app / .exe / .AppImage                 | Tech Monitor.app / .exe / .AppImage             | Finance Monitor.app / .exe / .AppImage           | (web-only)                                            |
+| **Desktop App**       | Godsview.app / .exe / .AppImage                 | Tech Monitor.app / .exe / .AppImage             | Finance Monitor.app / .exe / .AppImage           | (web-only)                                            |
 
 **Happy Monitor** is a deliberately uplifting counterpart to the geopolitical dashboard. All conflict, military, and threat overlays are disabled. The variant uses a warm nature-inspired color palette (`happy-theme.css`) and sources content from 10 dedicated positive-news RSS feeds (Good News Network, Positive.News, Reasons to be Cheerful, Optimist Daily, Upworthy, DailyGood, Good Good Good, GOOD Magazine, Sunny Skyz, The Better India). A two-pass positive classifier sorts articles into 6 categories — `science-health`, `nature-wildlife`, `humanity-kindness`, `innovation-tech`, `climate-wins`, `culture-community` — using source-name shortcuts (GNN sub-feeds are pre-classified) followed by priority-ordered keyword matching. Panels include Good News Feed with category filtering, Human Progress metrics, Live Counters, Today's Hero, Breakthroughs, 5 Good Things digest, Conservation Wins (species recovery stories), and Renewable Energy installations.
 
@@ -1002,7 +1003,7 @@ Feeds also carry a **propaganda risk rating** and **state affiliation flag**. St
 
 ## Edge Function Architecture
 
-Gods View uses 60+ Vercel Edge Functions as a lightweight API layer, split into two generations. Legacy endpoints in `api/*.js` each handle a single data source concern — proxying, caching, or transforming external APIs. The newer proto-first endpoints route through a single edge gateway (`api/[domain]/v1/[rpc].ts`) that dispatches to typed handler implementations generated from Protocol Buffer definitions (see [Proto-First API Contracts](#proto-first-api-contracts)). Both generations coexist, with new features built proto-first. This architecture avoids a monolithic backend while keeping API keys server-side:
+Godsview uses 60+ Vercel Edge Functions as a lightweight API layer, split into two generations. Legacy endpoints in `api/*.js` each handle a single data source concern — proxying, caching, or transforming external APIs. The newer proto-first endpoints route through a single edge gateway (`api/[domain]/v1/[rpc].ts`) that dispatches to typed handler implementations generated from Protocol Buffer definitions (see [Proto-First API Contracts](#proto-first-api-contracts)). Both generations coexist, with new features built proto-first. This architecture avoids a monolithic backend while keeping API keys server-side:
 
 - **RSS Proxy** — domain-allowlisted proxy for 100+ feeds, preventing CORS issues and hiding origin servers. Feeds from domains that block Vercel IPs are automatically routed through the Railway relay.
 - **AI Pipeline** — Groq and OpenRouter edge functions with Redis deduplication, so identical headlines across concurrent users only trigger one LLM call. The classify-event endpoint pauses its queue on 500 errors to avoid wasting API quota.
@@ -1086,7 +1087,7 @@ The Tauri desktop app wraps the dashboard in a native window (macOS, Windows, Li
                       │ fetch (on local failure)
                       ▼
 ┌─────────────────────────────────────────────────┐
-│         Cloud (worldmonitor.app)                │
+│         Cloud (godsview.app)                │
 │  Transparent fallback when local handlers fail  │
 └─────────────────────────────────────────────────┘
 ```
@@ -1115,7 +1116,7 @@ The `/api/service-status` health check endpoint is exempt from token validation 
 
 ### Dynamic Port Allocation
 
-The sidecar defaults to port 46123 but handles `EADDRINUSE` gracefully — if the port is occupied (another Gods View instance, or any other process), the sidecar binds to port 0 and lets the OS assign an available ephemeral port. The actual bound port is written to a port file (`sidecar.port` in the logs directory) that the Rust host polls on startup (100ms intervals, 5-second timeout). The frontend discovers the port at runtime via the `get_local_api_port` IPC command, and `getApiBaseUrl()` in `runtime.ts` is the canonical accessor — hardcoding port 46123 in frontend code is prohibited. The CSP `connect-src` directive uses `http://127.0.0.1:*` to accommodate any port.
+The sidecar defaults to port 46123 but handles `EADDRINUSE` gracefully — if the port is occupied (another Godsview instance, or any other process), the sidecar binds to port 0 and lets the OS assign an available ephemeral port. The actual bound port is written to a port file (`sidecar.port` in the logs directory) that the Rust host polls on startup (100ms intervals, 5-second timeout). The frontend discovers the port at runtime via the `get_local_api_port` IPC command, and `getApiBaseUrl()` in `runtime.ts` is the canonical accessor — hardcoding port 46123 in frontend code is prohibited. The CSP `connect-src` directive uses `http://127.0.0.1:*` to accommodate any port.
 
 ### Local RSS Proxy
 
@@ -1233,7 +1234,7 @@ The AI summarization pipeline adds content-based deduplication: headlines are ha
 
 | Layer                          | Mechanism                                                                                                                                                                                                                                          |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **CORS origin allowlist**      | Only `worldmonitor.app`, `tech.worldmonitor.app`, `finance.worldmonitor.app`, and `localhost:*` can call API endpoints. All others receive 403. Implemented in `api/_cors.js`.                                                                     |
+| **CORS origin allowlist**      | Only `godsview.app`, `tech.godsview.app`, `finance.godsview.app`, and `localhost:*` can call API endpoints. All others receive 403. Implemented in `api/_cors.js`.                                                                     |
 | **RSS domain allowlist**       | The RSS proxy only fetches from explicitly listed domains (~90+). Requests for unlisted domains are rejected with 403.                                                                                                                             |
 | **Railway domain allowlist**   | The Railway relay has a separate, smaller domain allowlist for feeds that need the alternate origin.                                                                                                                                               |
 | **API key isolation**          | All API keys live server-side in Vercel environment variables. The browser never sees Groq, OpenRouter, ACLED, Finnhub, or other credentials.                                                                                                      |
@@ -1253,7 +1254,7 @@ The AI summarization pipeline adds content-based deduplication: headlines are ha
 
 ## Error Tracking & Production Hardening
 
-Sentry captures unhandled exceptions and promise rejections in production, with environment-aware routing (production on `worldmonitor.app`, preview on `*.vercel.app`, disabled on localhost and Tauri desktop).
+Sentry captures unhandled exceptions and promise rejections in production, with environment-aware routing (production on `godsview.app`, preview on `*.vercel.app`, disabled on localhost and Tauri desktop).
 
 The configuration includes 30+ `ignoreErrors` patterns that suppress noise from:
 
@@ -1278,7 +1279,7 @@ Transactions are sampled at 10% to balance observability with cost. Release trac
 
 ```bash
 # Clone and run
-git clone https://github.com/koala73/worldmonitor.git
+git clone https://github.com/RagulRakarot/Godsview.git
 cd worldmonitor
 npm install
 vercel dev       # Runs frontend + all 60+ API edge functions
@@ -1316,7 +1317,7 @@ See [`.env.example`](./.env.example) for the complete list with registration lin
 
 ## Self-Hosting
 
-Gods View relies on **60+ Vercel Edge Functions** in the `api/` directory for RSS proxying, data caching, and API key isolation. Running `npm run dev` alone starts only the Vite frontend — the edge functions won't execute, and most panels (news feeds, markets, AI summaries) will be empty.
+Godsview relies on **60+ Vercel Edge Functions** in the `api/` directory for RSS proxying, data caching, and API key isolation. Running `npm run dev` alone starts only the Vite frontend — the edge functions won't execute, and most panels (news feeds, markets, AI summaries) will be empty.
 
 ### Option 1: Deploy to Vercel (Recommended)
 
@@ -1403,10 +1404,10 @@ Contributions welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed gui
 
 ```bash
 # Development
-npm run dev          # Full variant (worldmonitor.app)
-npm run dev:tech     # Tech variant (tech.worldmonitor.app)
-npm run dev:finance  # Finance variant (finance.worldmonitor.app)
-npm run dev:happy    # Happy variant (happy.worldmonitor.app)
+npm run dev          # Full variant (godsview.app)
+npm run dev:tech     # Tech variant (tech.godsview.app)
+npm run dev:finance  # Finance variant (finance.godsview.app)
+npm run dev:happy    # Happy variant (happy.godsview.app)
 
 # Production builds
 npm run build:full      # Build full variant
@@ -1418,10 +1419,10 @@ npm run build:happy     # Build happy variant
 npm run typecheck    # TypeScript type checking (tsc --noEmit)
 
 # Desktop packaging
-npm run desktop:package:macos:full      # .app + .dmg (Gods View)
+npm run desktop:package:macos:full      # .app + .dmg (Godsview)
 npm run desktop:package:macos:tech      # .app + .dmg (Tech Monitor)
 npm run desktop:package:macos:finance   # .app + .dmg (Finance Monitor)
-npm run desktop:package:windows:full    # .exe + .msi (Gods View)
+npm run desktop:package:windows:full    # .exe + .msi (Godsview)
 npm run desktop:package:windows:tech    # .exe + .msi (Tech Monitor)
 npm run desktop:package:windows:finance # .exe + .msi (Finance Monitor)
 
@@ -1538,7 +1539,7 @@ See [full roadmap](./docs/DOCUMENTATION.md#roadmap).
 
 ## Support the Project
 
-If you find Gods View useful:
+If you find Godsview useful:
 
 - **Star this repo** to help others discover it
 - **Share** with colleagues interested in OSINT
@@ -1555,13 +1556,13 @@ GNU Affero General Public License v3.0 (AGPL-3.0) — see [LICENSE](LICENSE) for
 
 ## Author
 
-**Elie Habib** — [GitHub](https://github.com/koala73)
+**Ragul Rakarot** — [GitHub](https://github.com/RagulRakarot)
 
 ---
 
 ## Contributors
 
-Thanks to everyone who has contributed to Gods View:
+Thanks to everyone who has contributed to Godsview:
 
 [@SebastienMelki](https://github.com/SebastienMelki),
 [@Lib-LOCALE](https://github.com/Lib-LOCALE),
@@ -1593,16 +1594,16 @@ If you discover a vulnerability, please see our [Security Policy](./SECURITY.md)
 ---
 
 <p align="center">
-  <a href="https://worldmonitor.app">worldmonitor.app</a> &nbsp;·&nbsp;
-  <a href="https://tech.worldmonitor.app">tech.worldmonitor.app</a> &nbsp;·&nbsp;
-  <a href="https://finance.worldmonitor.app">finance.worldmonitor.app</a>
+  <a href="https://godsview.app">godsview.app</a> &nbsp;·&nbsp;
+  <a href="https://tech.godsview.app">tech.godsview.app</a> &nbsp;·&nbsp;
+  <a href="https://finance.godsview.app">finance.godsview.app</a>
 </p>
 
 ## Star History
 
-<a href="https://api.star-history.com/svg?repos=koala73/worldmonitor&type=Date">
+<a href="https://api.star-history.com/svg?repos=RagulRakarot/Godsview&type=Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=koala73/worldmonitor&type=Date&type=Date&theme=dark" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=koala73/worldmonitor&type=Date&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=RagulRakarot/Godsview&type=Date&type=Date&theme=dark" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=RagulRakarot/Godsview&type=Date&type=Date" />
  </picture>
 </a>

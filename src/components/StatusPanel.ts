@@ -34,7 +34,7 @@ const WORLD_FEEDS = new Set([
   'Politics', 'Middleeast', 'Tech', 'Ai', 'Finance',
   'Gov', 'Intel', 'Layoffs', 'Thinktanks', 'Energy',
   'Polymarket', 'Weather', 'NetBlocks', 'Shipping', 'Military',
-  'Cyber Threats', 'GPS Jam'
+  'Cyber Threats'
 ]);
 const WORLD_APIS = new Set([
   'RSS2JSON', 'Finnhub', 'CoinGecko', 'Polymarket', 'USGS', 'FRED',

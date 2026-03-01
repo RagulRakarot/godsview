@@ -15,8 +15,7 @@ import { startLearning } from '@/services/country-instability';
 import { dataFreshness } from '@/services/data-freshness';
 import { loadFromStorage, parseMapUrlState, saveToStorage, isMobileDevice } from '@/utils';
 import type { ParsedMapUrlState } from '@/utils';
-import { SignalModal, IntelligenceGapBadge, BreakingNewsBanner } from '@/components';
-import { initBreakingNewsAlerts, destroyBreakingNewsAlerts } from '@/services/breaking-news-alerts';
+import { SignalModal, IntelligenceGapBadge } from '@/components';
 import type { ServiceStatusPanel } from '@/components/ServiceStatusPanel';
 import type { StablecoinPanel } from '@/components/StablecoinPanel';
 import type { ETFFlowsPanel } from '@/components/ETFFlowsPanel';
@@ -92,7 +91,7 @@ export class App {
       mapLayers = loadFromStorage<MapLayers>(STORAGE_KEYS.mapLayers, defaultLayers);
       // Happy variant: force non-happy layers off even if localStorage has stale true values
       if (currentVariant === 'happy') {
-        const unhappyLayers: (keyof MapLayers)[] = ['conflicts', 'bases', 'hotspots', 'nuclear', 'irradiators', 'sanctions', 'military', 'protests', 'pipelines', 'waterways', 'ais', 'flights', 'spaceports', 'minerals', 'natural', 'fires', 'outages', 'cyberThreats', 'weather', 'economic', 'cables', 'datacenters', 'ucdpEvents', 'displacement', 'climate', 'iranAttacks'];
+        const unhappyLayers: (keyof MapLayers)[] = ['conflicts', 'bases', 'hotspots', 'nuclear', 'irradiators', 'sanctions', 'military', 'protests', 'pipelines', 'waterways', 'ais', 'flights', 'spaceports', 'minerals', 'natural', 'fires', 'outages', 'cyberThreats', 'weather', 'economic', 'cables', 'datacenters', 'ucdpEvents', 'displacement', 'climate'];
         unhappyLayers.forEach(layer => { mapLayers[layer] = false; });
       }
       panelSettings = loadFromStorage<Record<string, PanelConfig>>(
@@ -189,7 +188,7 @@ export class App {
       }
       // For happy variant, force off all non-happy layers (including natural events)
       if (currentVariant === 'happy') {
-        const unhappyLayers: (keyof MapLayers)[] = ['conflicts', 'bases', 'hotspots', 'nuclear', 'irradiators', 'sanctions', 'military', 'protests', 'pipelines', 'waterways', 'ais', 'flights', 'spaceports', 'minerals', 'natural', 'fires', 'outages', 'cyberThreats', 'weather', 'economic', 'cables', 'datacenters', 'ucdpEvents', 'displacement', 'climate', 'iranAttacks'];
+        const unhappyLayers: (keyof MapLayers)[] = ['conflicts', 'bases', 'hotspots', 'nuclear', 'irradiators', 'sanctions', 'military', 'protests', 'pipelines', 'waterways', 'ais', 'flights', 'spaceports', 'minerals', 'natural', 'fires', 'outages', 'cyberThreats', 'weather', 'economic', 'cables', 'datacenters', 'ucdpEvents', 'displacement', 'climate'];
         const urlLayers = initialUrlState.layers;
         unhappyLayers.forEach(layer => {
           urlLayers[layer] = false;
@@ -228,7 +227,6 @@ export class App {
       statusPanel: null,
       searchModal: null,
       findingsBadge: null,
-      breakingBanner: null,
       playbackControl: null,
       exportPanel: null,
       unifiedSettings: null,
@@ -358,11 +356,6 @@ export class App {
       });
     }
 
-    if (!this.state.isMobile) {
-      initBreakingNewsAlerts();
-      this.state.breakingBanner = new BreakingNewsBanner();
-    }
-
     // Phase 3: UI setup methods
     this.eventHandlers.startHeaderClock();
     this.eventHandlers.setupMobileWarning();
@@ -427,10 +420,8 @@ export class App {
       this.modules[i]!.destroy();
     }
 
-    // Clean up subscriptions, map, AIS, and breaking news
+    // Clean up subscriptions, map, and AIS
     this.unsubAiFlow?.();
-    this.state.breakingBanner?.destroy();
-    destroyBreakingNewsAlerts();
     this.state.map?.destroy();
     disconnectAisStream();
   }
@@ -565,21 +556,12 @@ export class App {
       this.refreshScheduler.scheduleRefresh('supplyChain', () => this.dataLoader.loadSupplyChain(), 10 * 60 * 1000);
     }
 
-    // Telegram Intel (near real-time, 60s refresh)
-    this.refreshScheduler.scheduleRefresh(
-      'telegram-intel',
-      () => this.dataLoader.loadTelegramIntel(),
-      60_000,
-      () => !!this.state.panels['telegram-intel']
-    );
-
     // Refresh intelligence signals for CII (geopolitical variant only)
     if (SITE_VARIANT === 'full') {
       this.refreshScheduler.scheduleRefresh('intelligence', () => {
-        const { military, iranEvents } = this.state.intelligenceCache;
+        const { military } = this.state.intelligenceCache;
         this.state.intelligenceCache = {};
         if (military) this.state.intelligenceCache.military = military;
-        if (iranEvents) this.state.intelligenceCache.iranEvents = iranEvents;
         return this.dataLoader.loadIntelligenceSignals();
       }, 15 * 60 * 1000);
     }
