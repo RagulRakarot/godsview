@@ -138,4 +138,207 @@ const VARIANT_META: Record<string, {
       'Economic indicator alerts',
       'IPO & earnings tracking',
       'Financial center mapping',
-      '
+      'Sector heatmap',
+      'Market radar signals',
+    ],
+  },
+};
+
+const activeVariant = process.env.VITE_VARIANT || 'full';
+const activeMeta = VARIANT_META[activeVariant] || VARIANT_META.full;
+
+function htmlVariantPlugin(): Plugin {
+  return {
+    name: 'html-variant',
+    transformIndexHtml(html) {
+      let result = html
+        .replace(/<title>.*?<\/title>/, `<title>${activeMeta.title}</title>`)
+        .replace(/<meta name="title" content=".*?" \/>/, `<meta name="title" content="${activeMeta.title}" />`)
+        .replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${activeMeta.description}" />`)
+        .replace(/<meta name="keywords" content=".*?" \/>/, `<meta name="keywords" content="${activeMeta.keywords}" />`)
+        .replace(/<link rel="canonical" href=".*?" \/>/, `<link rel="canonical" href="${activeMeta.url}" />`)
+        .replace(/<meta name="application-name" content=".*?" \/>/, `<meta name="application-name" content="${activeMeta.siteName}" />`)
+        .replace(/<meta property="og:url" content=".*?" \/>/, `<meta property="og:url" content="${activeMeta.url}" />`)
+        .replace(/<meta property="og:title" content=".*?" \/>/, `<meta property="og:title" content="${activeMeta.title}" />`)
+        .replace(/<meta property="og:description" content=".*?" \/>/, `<meta property="og:description" content="${activeMeta.description}" />`)
+        .replace(/<meta property="og:site_name" content=".*?" \/>/, `<meta property="og:site_name" content="${activeMeta.siteName}" />`)
+        .replace(/<meta name="subject" content=".*?" \/>/, `<meta name="subject" content="${activeMeta.subject}" />`)
+        .replace(/<meta name="classification" content=".*?" \/>/, `<meta name="classification" content="${activeMeta.classification}" />`)
+        .replace(/<meta name="twitter:url" content=".*?" \/>/, `<meta name="twitter:url" content="${activeMeta.url}" />`)
+        .replace(/<meta name="twitter:title" content=".*?" \/>/, `<meta name="twitter:title" content="${activeMeta.title}" />`)
+        .replace(/<meta name="twitter:description" content=".*?" \/>/, `<meta name="twitter:description" content="${activeMeta.description}" />`)
+        .replace(/"name": "World Monitor"/, `"name": "${activeMeta.siteName}"`)
+        .replace(/"alternateName": "WorldMonitor"/, `"alternateName": "${activeMeta.siteName.replace(' ', '')}"`)
+        .replace(/"url": "https:\/\/worldmonitor\.app\/"/, `"url": "${activeMeta.url}"`)
+        .replace(/"description": "Real-time global intelligence dashboard with live news, markets, military tracking, infrastructure monitoring, and geopolitical data."/, `"description": "${activeMeta.description}"`);
+
+      // Theme-color meta
+      if (activeVariant === 'happy') {
+        result = result.replace(
+          /<meta name="theme-color" content=".*?" \/>/,
+          '<meta name="theme-color" content="#FAFAF5" />'
+        );
+      }
+
+      if (activeVariant !== 'full') {
+        result = result.replace(
+          /if\(v\)document\.documentElement\.dataset\.variant=v;/,
+          `v='${activeVariant}';document.documentElement.dataset.variant=v;`
+        );
+      }
+
+      if (isDesktopBuild) {
+        result = result
+          .replace(
+            /connect-src 'self' https: http:\/\/localhost:5173/,
+            "connect-src 'self' https: http://localhost:5173 http://127.0.0.1:*"
+          )
+          .replace(
+            /frame-src 'self'/,
+            "frame-src 'self' http://127.0.0.1:*"
+          );
+      }
+
+      if (activeVariant !== 'full') {
+        result = result
+          .replace(/\/favico\/favicon/g, `/favico/${activeVariant}/favicon`)
+          .replace(/\/favico\/apple-touch-icon/g, `/favico/${activeVariant}/apple-touch-icon`)
+          .replace(/\/favico\/android-chrome/g, `/favico/${activeVariant}/android-chrome`)
+          .replace(/\/favico\/og-image/g, `/favico/${activeVariant}/og-image`);
+      }
+
+      return result;
+    },
+  };
+}
+
+function polymarketPlugin(): Plugin {
+  const GAMMA_BASE = 'https://gamma-api.polymarket.com';
+  const ALLOWED_ORDER = ['volume', 'liquidity', 'startDate', 'endDate', 'spread'];
+
+  return {
+    name: 'polymarket-dev',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url?.startsWith('/api/polymarket')) return next();
+
+        const url = new URL(req.url, 'http://localhost');
+        const endpoint = url.searchParams.get('endpoint') || 'markets';
+        const closed = ['true', 'false'].includes(url.searchParams.get('closed') ?? '') ? url.searchParams.get('closed') : 'false';
+        const order = ALLOWED_ORDER.includes(url.searchParams.get('order') ?? '') ? url.searchParams.get('order') : 'volume';
+        const ascending = ['true', 'false'].includes(url.searchParams.get('ascending') ?? '') ? url.searchParams.get('ascending') : 'false';
+        const rawLimit = parseInt(url.searchParams.get('limit') ?? '', 10);
+        const limit = isNaN(rawLimit) ? 50 : Math.max(1, Math.min(100, rawLimit));
+
+        const params = new URLSearchParams({ closed: closed!, order: order!, ascending: ascending!, limit: String(limit) });
+        if (endpoint === 'events') {
+          const tag = (url.searchParams.get('tag') ?? '').replace(/[^a-z0-9-]/gi, '').slice(0, 100);
+          if (tag) params.set('tag_slug', tag);
+        }
+
+        const gammaUrl = `${GAMMA_BASE}/${endpoint === 'events' ? 'events' : 'markets'}?${params}`;
+
+        res.setHeader('Content-Type', 'application/json');
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 8000);
+          const resp = await fetch(gammaUrl, { headers: { Accept: 'application/json' }, signal: controller.signal });
+          clearTimeout(timer);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const data = await resp.text();
+          res.setHeader('Cache-Control', 'public, max-age=120');
+          res.setHeader('X-Polymarket-Source', 'gamma');
+          res.end(data);
+        } catch {
+          res.setHeader('Cache-Control', 'public, max-age=300');
+          res.end('[]');
+        }
+      });
+    },
+  };
+}
+
+function sebufApiPlugin(): Plugin {
+  let cachedRouter: any = null;
+  let cachedCorsMod: any = null;
+
+  async function buildRouter() {
+    const [
+      routerMod, corsMod, errorMod,
+      seismologyServerMod, seismologyHandlerMod,
+      wildfireServerMod, wildfireHandlerMod,
+      climateServerMod, climateHandlerMod,
+      predictionServerMod, predictionHandlerMod,
+      displacementServerMod, displacementHandlerMod,
+      aviationServerMod, aviationHandlerMod,
+      researchServerMod, researchHandlerMod,
+      unrestServerMod, unrestHandlerMod,
+      conflictServerMod, conflictHandlerMod,
+      maritimeServerMod, maritimeHandlerMod,
+      cyberServerMod, cyberHandlerMod,
+      economicServerMod, economicHandlerMod,
+      infrastructureServerMod, infrastructureHandlerMod,
+      marketServerMod, marketHandlerMod,
+      newsServerMod, newsHandlerMod,
+      intelligenceServerMod, intelligenceHandlerMod,
+      militaryServerMod, militaryHandlerMod,
+      positiveEventsServerMod, positiveEventsHandlerMod,
+      givingServerMod, givingHandlerMod,
+      tradeServerMod, tradeHandlerMod,
+    ] = await Promise.all([
+        import('./server/router'),
+        import('./server/cors'),
+        import('./server/error-mapper'),
+        import('./src/generated/server/worldmonitor/seismology/v1/service_server'),
+        import('./server/worldmonitor/seismology/v1/handler'),
+        import('./src/generated/server/worldmonitor/wildfire/v1/service_server'),
+        import('./server/worldmonitor/wildfire/v1/handler'),
+        import('./src/generated/server/worldmonitor/climate/v1/service_server'),
+        import('./server/worldmonitor/climate/v1/handler'),
+        import('./src/generated/server/worldmonitor/prediction/v1/service_server'),
+        import('./server/worldmonitor/prediction/v1/handler'),
+        import('./src/generated/server/worldmonitor/displacement/v1/service_server'),
+        import('./server/worldmonitor/displacement/v1/handler'),
+        import('./src/generated/server/worldmonitor/aviation/v1/service_server'),
+        import('./server/worldmonitor/aviation/v1/handler'),
+        import('./src/generated/server/worldmonitor/research/v1/service_server'),
+        import('./server/worldmonitor/research/v1/handler'),
+        import('./src/generated/server/worldmonitor/unrest/v1/service_server'),
+        import('./server/worldmonitor/unrest/v1/handler'),
+        import('./src/generated/server/worldmonitor/conflict/v1/service_server'),
+        import('./server/worldmonitor/conflict/v1/handler'),
+        import('./src/generated/server/worldmonitor/maritime/v1/service_server'),
+        import('./server/worldmonitor/maritime/v1/handler'),
+        import('./src/generated/server/worldmonitor/cyber/v1/service_server'),
+        import('./server/worldmonitor/cyber/v1/handler'),
+        import('./src/generated/server/worldmonitor/economic/v1/service_server'),
+        import('./server/worldmonitor/economic/v1/handler'),
+        import('./src/generated/server/worldmonitor/infrastructure/v1/service_server'),
+        import('./server/worldmonitor/infrastructure/v1/handler'),
+        import('./src/generated/server/worldmonitor/market/v1/service_server'),
+        import('./server/worldmonitor/market/v1/handler'),
+        import('./src/generated/server/worldmonitor/news/v1/service_server'),
+        import('./server/worldmonitor/news/v1/handler'),
+        import('./src/generated/server/worldmonitor/intelligence/v1/service_server'),
+        import('./server/worldmonitor/intelligence/v1/handler'),
+        import('./src/generated/server/worldmonitor/military/v1/service_server'),
+        import('./server/worldmonitor/military/v1/handler'),
+        import('./src/generated/server/worldmonitor/positive_events/v1/service_server'),
+        import('./server/worldmonitor/positive-events/v1/handler'),
+        import('./src/generated/server/worldmonitor/giving/v1/service_server'),
+        import('./server/worldmonitor/giving/v1/handler'),
+        import('./src/generated/server/worldmonitor/trade/v1/service_server'),
+        import('./server/worldmonitor/trade/v1/handler'),
+      ]);
+
+    const serverOptions = { onError: errorMod.mapErrorToResponse };
+    const allRoutes = [
+      ...seismologyServerMod.createSeismologyServiceRoutes(seismologyHandlerMod.seismologyHandler, serverOptions),
+      ...wildfireServerMod.createWildfireServiceRoutes(wildfireHandlerMod.wildfireHandler, serverOptions),
+      ...climateServerMod.createClimateServiceRoutes(climateHandlerMod.climateHandler, serverOptions),
+      ...predictionServerMod.createPredictionServiceRoutes(predictionHandlerMod.predictionHandler, serverOptions),
+      ...displacementServerMod.createDisplacementServiceRoutes(displacementHandlerMod.displacementHandler, serverOptions),
+      ...aviationServerMod.createAviationServiceRoutes(aviationHandlerMod.aviationHandler, serverOptions),
+      ...researchServerMod.createResearchServiceRoutes(researchHandlerMod.researchHandler, serverOptions),
+      ...unrestServerMod.createUnrestServiceRoutes(unrestHandlerMod.unrestHandler, serverOptions),
+      ...conflictServerMod.createConflict
