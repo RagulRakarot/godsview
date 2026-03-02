@@ -31,6 +31,7 @@ export interface CountryBriefSignals {
   displacementOutflow: number;
   climateStress: number;
   conflictEvents: number;
+  gpsJammingHexes: number;
   isTier1: boolean;
 }
 

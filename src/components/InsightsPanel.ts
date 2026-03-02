@@ -2,7 +2,7 @@ import { Panel } from './Panel';
 import { mlWorker } from '@/services/ml-worker';
 import { generateSummary, type SummarizeOptions } from '@/services/summarization';
 import { parallelAnalysis, type AnalyzedHeadline } from '@/services/parallel-analysis';
-import { signalAggregator, logSignalSummary, type RegionalConvergence } from '@/services/signal-aggregator';
+import { signalAggregator, type RegionalConvergence } from '@/services/signal-aggregator';
 import { focalPointDetector } from '@/services/focal-point-detector';
 import { ingestNewsForCII } from '@/services/country-instability';
 import { getTheaterPostureSummaries } from '@/services/military-surge';
@@ -312,14 +312,14 @@ export class InsightsPanel extends Panel {
         signalSummary = signalAggregator.getSummary();
         this.lastConvergenceZones = signalSummary.convergenceZones;
         if (signalSummary.totalSignals > 0) {
-          logSignalSummary();
+          // logSignalSummary();
         }
 
         // Run focal point detection (correlates news entities with map signals)
         focalSummary = focalPointDetector.analyze(clusters, signalSummary);
         this.lastFocalPoints = focalSummary.focalPoints;
         if (focalSummary.focalPoints.length > 0) {
-          focalPointDetector.logSummary();
+          // focalPointDetector.logSummary();
           // Ingest news for CII BEFORE signaling (so CII has data when it calculates)
           ingestNewsForCII(clusters);
           // Signal CII to refresh now that focal points AND news data are available

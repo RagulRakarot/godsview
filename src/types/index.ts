@@ -494,6 +494,8 @@ export interface PanelConfig {
 }
 
 export interface MapLayers {
+  iranAttacks: boolean;
+  gpsJamming: boolean;
   conflicts: boolean;
   bases: boolean;
   cables: boolean;
@@ -541,6 +543,8 @@ export interface MapLayers {
   renewableInstallations: boolean;
   // Trade route layers
   tradeRoutes: boolean;
+  // Visual layers
+  dayNight: boolean;
 }
 
 export interface AIDataCenter {
