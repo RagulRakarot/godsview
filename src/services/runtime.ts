@@ -156,7 +156,7 @@ function isAppOriginUrl(urlStr: string): boolean {
     return (
       APP_HOSTS.has(host) ||
       host.endsWith('.worldmonitor.app') ||
-      (currentHost && host === currentHost)
+      (!!currentHost && host === currentHost)
     );
   } catch {
     return false;
