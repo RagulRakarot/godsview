@@ -152,7 +152,12 @@ function isAppOriginUrl(urlStr: string): boolean {
   try {
     const u = new URL(urlStr);
     const host = u.hostname;
-    return APP_HOSTS.has(host) || host.endsWith('.worldmonitor.app');
+    const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+    return (
+      APP_HOSTS.has(host) ||
+      host.endsWith('.worldmonitor.app') ||
+      (currentHost && host === currentHost)
+    );
   } catch {
     return false;
   }
